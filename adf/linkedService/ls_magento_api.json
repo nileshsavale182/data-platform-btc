@@ -1,0 +1,12 @@
+{
+	"name": "ls_magento_api",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://ais-dev-ey2u3nu4wgmfbcuz722d6u-437213404534.asia-southeast1.run.app",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
