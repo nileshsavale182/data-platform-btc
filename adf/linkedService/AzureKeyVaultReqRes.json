@@ -1,0 +1,10 @@
+{
+	"name": "AzureKeyVaultReqRes",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://keyvaultbtcda.vault.azure.net/"
+		}
+	}
+}
