@@ -1,0 +1,20 @@
+{
+	"name": "DS_ADLS_Raw_Users",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "users_page2.json",
+				"folderPath": "reqres/users",
+				"fileSystem": "raw"
+			}
+		},
+		"schema": {}
+	}
+}
