@@ -5,10 +5,18 @@
 			"referenceName": "LS_REST_Reqres",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"pageNumber": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "RestResource",
 		"typeProperties": {
-			"relativeUrl": "users?page=2"
+			"relativeUrl": {
+				"value": "@concat('users?page=',dataset().pageNumber)",
+				"type": "Expression"
+			}
 		},
 		"schema": []
 	}
