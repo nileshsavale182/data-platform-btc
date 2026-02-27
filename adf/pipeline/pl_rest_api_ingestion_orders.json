@@ -1,5 +1,5 @@
 {
-	"name": "pl_magento_rest_api_ingestion_orders",
+	"name": "pl_rest_api_ingestion_orders",
 	"properties": {
 		"activities": [
 			{
