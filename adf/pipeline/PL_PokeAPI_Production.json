@@ -1,0 +1,414 @@
+{
+	"name": "PL_PokeAPI_Production",
+	"properties": {
+		"activities": [
+			{
+				"name": "SPInsertAuditStarted",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[control].[sp_insert_api_ingestion_audit]",
+					"storedProcedureParameters": {
+						"entity_name": {
+							"value": "pokemon",
+							"type": "String"
+						},
+						"run_id": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"source_system": {
+							"value": "PokeAPI",
+							"type": "String"
+						},
+						"watermark_used": {
+							"value": {
+								"value": "@utcNow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "LookupState",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "SPInsertAuditStarted",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT last_offset\nFROM control.api_ingestion_state\nWHERE source_system = 'PokeAPI'\nAND entity_name = 'pokemon'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_SQL_Control_State",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Set_v_offset",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "LookupState",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_offset",
+					"value": {
+						"value": "@activity('LookupState').output.firstRow.last_offset",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Web_GetFirstPage",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Set_v_offset",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": {
+						"value": "@concat('https://pokeapi.co/api/v2/pokemon?offset=', variables('v_offset'), '&limit=', variables('v_pageSize'))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set_v_totalPages",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Web_GetFirstPage",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_totalPages",
+					"value": {
+						"value": "@div( \n    add(activity('Web_GetFirstPage').output.count, \n        sub(variables('v_pageSize'), 1)\n    ),\n    variables('v_pageSize')\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ForEachPage",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Set_v_totalPages",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@range(0, variables('v_totalPages'))",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy_Page",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET"
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DS_REST_Pokemon",
+									"type": "DatasetReference",
+									"parameters": {
+										"offset": {
+											"value": "@string(mul(item(), variables('v_pageSize')))",
+											"type": "Expression"
+										},
+										"limit": {
+											"value": "@variables('v_pageSize')",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DS_ADLS_Pokemon_Raw",
+									"type": "DatasetReference",
+									"parameters": {
+										"p_filename": {
+											"value": "@concat('page_',string(item()), '.json')",
+											"type": "Expression"
+										},
+										"p_folderpath": {
+											"value": "@concat(\n    'raw/pokeapi/pokemon/ingestion_date=',\n    formatDateTime(utcNow(), 'yyyy-MM-dd')\n)",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "SP_UpdateAuditSUCCESS",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ForEachPage",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[control].[sp_update_api_ingestion_audit_success]",
+					"storedProcedureParameters": {
+						"rows_ingested": {
+							"value": {
+								"value": "@activity('Web_GetFirstPage').output.count",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"run_id": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_UpdateStateTable",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ForEachPage",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[control].[sp_update_api_ingestion_state]",
+					"storedProcedureParameters": {
+						"entity_name": {
+							"value": "PokeAPI",
+							"type": "String"
+						},
+						"last_offset": {
+							"value": {
+								"value": "@mul(variables('v_totalPages'), variables('v_pageSize'))",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"last_run_id": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"last_status": {
+							"value": "SUCCESS",
+							"type": "String"
+						},
+						"source_system": {
+							"value": "PokeAPI",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_UpdateAuditFailure",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ForEachPage",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "Web_GetFirstPage",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[control].[sp_update_api_ingestion_audit_failed]",
+					"storedProcedureParameters": {
+						"error_message": {
+							"value": "",
+							"type": "String"
+						},
+						"run_id": {
+							"value": "",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"variables": {
+			"v_offset": {
+				"type": "Integer",
+				"defaultValue": 0
+			},
+			"v_totalPages": {
+				"type": "Integer",
+				"defaultValue": 0
+			},
+			"v_pageSize": {
+				"type": "Integer",
+				"defaultValue": 200
+			},
+			"v_count": {
+				"type": "Integer",
+				"defaultValue": 0
+			},
+			"v_totalRows": {
+				"type": "Integer",
+				"defaultValue": 0
+			},
+			"v_totalRowsNew": {
+				"type": "Integer",
+				"defaultValue": 0
+			}
+		},
+		"annotations": []
+	}
+}
