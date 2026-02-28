@@ -237,54 +237,6 @@
 									}
 								}
 							]
-						},
-						{
-							"name": "Set_v_totalRows",
-							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "Copy_Page",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "v_totalRowsNew",
-								"value": {
-									"value": "@add(variables('v_totalRows'), activity('Copy_Page').output.rowsCopied)",
-									"type": "Expression"
-								}
-							}
-						},
-						{
-							"name": "Set_v_totalRowsAdded",
-							"type": "SetVariable",
-							"dependsOn": [
-								{
-									"activity": "Set_v_totalRows",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "v_totalRows",
-								"value": {
-									"value": "@variables('v_totalRowsNew')",
-									"type": "Expression"
-								}
-							}
 						}
 					]
 				}
