@@ -173,8 +173,7 @@
 						"value": "@range(0, variables('v_totalPages'))",
 						"type": "Expression"
 					},
-					"isSequential": false,
-					"batchCount": 7,
+					"isSequential": true,
 					"activities": [
 						{
 							"name": "Copy_Page",
