@@ -265,7 +265,7 @@
 					"storedProcedureParameters": {
 						"rows_ingested": {
 							"value": {
-								"value": "@variables('v_totalRows')",
+								"value": "@activity('Web_GetFirstPage').output.count",
 								"type": "Expression"
 							},
 							"type": "Int32"
@@ -275,6 +275,104 @@
 								"value": "@pipeline().RunId",
 								"type": "Expression"
 							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_UpdateStateTable",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ForEachPage",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[control].[sp_update_api_ingestion_state]",
+					"storedProcedureParameters": {
+						"entity_name": {
+							"value": "PokeAPI",
+							"type": "String"
+						},
+						"last_offset": {
+							"value": {
+								"value": "@mul(variables('v_totalPages'), variables('v_pageSize'))",
+								"type": "Expression"
+							},
+							"type": "Int32"
+						},
+						"last_run_id": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"last_status": {
+							"value": "SUCCESS",
+							"type": "String"
+						},
+						"source_system": {
+							"value": "PokeAPI",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_UpdateAuditFailure",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "ForEachPage",
+						"dependencyConditions": [
+							"Failed"
+						]
+					},
+					{
+						"activity": "Web_GetFirstPage",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[control].[sp_update_api_ingestion_audit_failed]",
+					"storedProcedureParameters": {
+						"error_message": {
+							"value": "",
+							"type": "String"
+						},
+						"run_id": {
+							"value": "",
 							"type": "String"
 						}
 					}
