@@ -383,6 +383,14 @@
 				}
 			}
 		],
+		"parameters": {
+			"sqlServerName": {
+				"type": "string"
+			},
+			"sqlDatabaseName": {
+				"type": "string"
+			}
+		},
 		"variables": {
 			"v_offset": {
 				"type": "Integer",
