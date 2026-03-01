@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "ADF-BTC-DA"
+		},
+		"AzureSqlDatabase1_password": {
+			"value": ""
+		},
+		"LS_ADLS_accountKey": {
+			"value": ""
+		},
+		"AzureSqlDatabase1_properties_typeProperties_server": {
+			"value": "sql-server-btc.database.windows.net"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_database": {
+			"value": "SQL_DB_BTC"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_userName": {
+			"value": "btc"
+		},
+		"LS_ADLS_properties_typeProperties_url": {
+			"value": "https://dlbtcda.dfs.core.windows.net/"
+		},
+		"LS_REST_PokeAPI_properties_typeProperties_url": {
+			"value": "https://pokeapi.co/api/v2/"
+		}
+	}
+}
