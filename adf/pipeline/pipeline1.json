@@ -1,0 +1,223 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "SP_Insert_Audit_Started",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
+			},
+			{
+				"name": "Set_v_runStartTime",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "SP_Insert_Audit_Started",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_runStartTime",
+					"value": {
+						"value": "@utcNow()",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set_v_upperBound",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_v_runStartTime",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_upperBound",
+					"value": ""
+				}
+			},
+			{
+				"name": "Set_v_lowerBound",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "SP_Insert_Audit_Started",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_lowerBound",
+					"value": ""
+				}
+			},
+			{
+				"name": "Set_v_PageSize",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "SP_Insert_Audit_Started",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_pageSize",
+					"value": 100
+				}
+			},
+			{
+				"name": "Set_v_currentPage",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "SP_Insert_Audit_Started",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_currentPage",
+					"value": 1
+				}
+			},
+			{
+				"name": "Web1",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Set_v_currentPage",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set_v_PageSize",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set_v_lowerBound",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set_v_upperBound",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
+			}
+		],
+		"variables": {
+			"v_runId": {
+				"type": "String"
+			},
+			"v_entityName": {
+				"type": "String"
+			},
+			"v_environment": {
+				"type": "String"
+			},
+			"v_lastWatermark": {
+				"type": "String"
+			},
+			"v_runStartTime": {
+				"type": "String"
+			},
+			"v_lowerBound": {
+				"type": "Integer"
+			},
+			"v_upperBound": {
+				"type": "Integer"
+			},
+			"v_pageSize": {
+				"type": "Integer"
+			},
+			"v_currentPage": {
+				"type": "Integer"
+			},
+			"v_totalCount": {
+				"type": "Integer"
+			},
+			"v_totalPages": {
+				"type": "Integer"
+			},
+			"v_pagesProcessed": {
+				"type": "Integer"
+			},
+			"v_recordsExpected": {
+				"type": "Integer"
+			},
+			"v_recordsWrittenRaw": {
+				"type": "Integer"
+			},
+			"v_errorMessage": {
+				"type": "String"
+			},
+			"v_apiResponseStatus": {
+				"type": "String"
+			},
+			"v_retryCount": {
+				"type": "Integer"
+			},
+			"v_executionStartTime": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
