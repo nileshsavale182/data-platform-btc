@@ -1,5 +1,5 @@
 {
-	"name": "pipeline1",
+	"name": "PL_Reqres_REST_Ingestion",
 	"properties": {
 		"activities": [
 			{
@@ -121,47 +121,6 @@
 				"typeProperties": {
 					"variableName": "v_currentPage",
 					"value": 1
-				}
-			},
-			{
-				"name": "Web_GetFirstPage",
-				"type": "WebActivity",
-				"dependsOn": [
-					{
-						"activity": "Set_v_currentPage",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					},
-					{
-						"activity": "Set_v_PageSize",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					},
-					{
-						"activity": "Set_v_lowerBound",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					},
-					{
-						"activity": "Set_v_upperBound",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"method": "GET"
 				}
 			}
 		],
