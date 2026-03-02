@@ -122,6 +122,319 @@
 					"variableName": "v_currentPage",
 					"value": 1
 				}
+			},
+			{
+				"name": "Copy_GetFirstPage",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set_v_upperBound",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set_v_lowerBound",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set_v_PageSize",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set_v_currentPage",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"enableStaging": false
+				}
+			},
+			{
+				"name": "Lookup_totalCount",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Copy_GetFirstPage",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "Json1",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Set_v_totalCount",
+				"description": "",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Lookup_totalCount",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_totalCount",
+					"value": ""
+				}
+			},
+			{
+				"name": "Until_LastPage",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "Set_v_totalPages",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greater(variables('v_currentPage'), variables('v_pageSize'))",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Copy data1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 3,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": "GET",
+									"paginationRules": {
+										"supportRFC5988": "true"
+									}
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "DS_REST_Demo",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "Json1",
+									"type": "DatasetReference",
+									"parameters": {
+										"p_currentPage": {
+											"value": "@concat(\n    'page_',\n    variables('v_currentPage'),\n    '.json'\n)",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Set_v_currentPageTemp",
+							"description": "As self referencing of variable is not allowed in ADF we are setting temporary value to v_currentPageTemp and then we will again set that value to v_currentPage",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set_v_pagesProcessed",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_currentPage_Temp",
+								"value": {
+									"value": "@add(variables('v_currentPage'), 1)",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set_v_currentPage_Increment",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set_v_currentPageTemp",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_currentPage",
+								"value": {
+									"value": "@variables('v_currentPage_Temp')",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set_v_pagesProcessed",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set_v_pagesProcessedTemp",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_pagesProcessed",
+								"value": {
+									"value": "@variables('v_pagesProcessedTemp')",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set_v_pagesProcessedTemp",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Copy data1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "v_pagesProcessedTemp",
+								"value": {
+									"value": "@add(variables('v_pagesProcessed'), 1)",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"timeout": "0.12:00:00"
+				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Until_LastPage",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
+			},
+			{
+				"name": "Set_v_totalPages",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set_v_totalCount",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_totalPages",
+					"value": {
+						"value": "@div(\n    add(variables('v_totalCount'), \n        sub(variables('v_pageSize'), 1)    \n        ), \n    variables('v_pageSize')\n    )",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"variables": {
@@ -178,6 +491,12 @@
 			},
 			"v_executionStartTime": {
 				"type": "String"
+			},
+			"v_currentPage_Temp": {
+				"type": "Integer"
+			},
+			"v_pagesProcessedTemp": {
+				"type": "Integer"
 			}
 		},
 		"annotations": []

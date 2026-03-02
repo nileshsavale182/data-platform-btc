@@ -1,0 +1,28 @@
+{
+	"name": "Json1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"p_currentPage": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().p_currentPage",
+					"type": "Expression"
+				},
+				"folderPath": "reqres",
+				"fileSystem": "raw"
+			}
+		},
+		"schema": {}
+	}
+}

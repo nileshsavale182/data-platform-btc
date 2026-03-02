@@ -1,0 +1,15 @@
+{
+	"name": "DS_REST_Demo",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_REST_PokeAPI",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": "api/users?page=2"
+		},
+		"schema": []
+	}
+}
