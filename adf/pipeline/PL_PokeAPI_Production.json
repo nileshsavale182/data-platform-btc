@@ -127,7 +127,7 @@
 				"typeProperties": {
 					"method": "GET",
 					"url": {
-						"value": "@concat('https://pokeapi.co/api/v2/pokemon?offset=', variables('v_offset'), '&limit=', variables('v_pageSize'))",
+						"value": "@concat(pipeline().parameters.p_baseUrl,'api/v2/pokemon?offset=', variables('v_offset'), '&limit=', variables('v_pageSize'))",
 						"type": "Expression"
 					}
 				}
@@ -384,11 +384,9 @@
 			}
 		],
 		"parameters": {
-			"sqlServerName": {
-				"type": "string"
-			},
-			"sqlDatabaseName": {
-				"type": "string"
+			"p_baseUrl": {
+				"type": "string",
+				"defaultValue": "https://pokeapi.co/"
 			}
 		},
 		"variables": {

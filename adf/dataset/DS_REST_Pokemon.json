@@ -3,7 +3,10 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "LS_REST_PokeAPI",
-			"type": "LinkedServiceReference"
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"REST_environment_variable": "pokeapi.co"
+			}
 		},
 		"parameters": {
 			"offset": {
