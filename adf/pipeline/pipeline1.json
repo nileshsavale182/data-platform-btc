@@ -124,7 +124,7 @@
 				}
 			},
 			{
-				"name": "Web1",
+				"name": "Web_GetFirstPage",
 				"type": "WebActivity",
 				"dependsOn": [
 					{
@@ -159,7 +159,10 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET"
+				}
 			}
 		],
 		"variables": {
