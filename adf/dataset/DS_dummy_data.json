@@ -1,0 +1,27 @@
+{
+	"name": "DS_dummy_data",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"p_run_id": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "@concat('dummy_data/orders/', \nformatDateTime(utcNow(), 'yyyy-MM-dd'),\n'/run_id=',\ndataset().p_run_id\n)",
+					"type": "Expression"
+				},
+				"fileSystem": "raw"
+			}
+		},
+		"schema": {}
+	}
+}

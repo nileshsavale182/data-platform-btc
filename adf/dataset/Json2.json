@@ -1,0 +1,47 @@
+{
+	"name": "Json2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "page_0.json",
+				"folderPath": "pokeapi/pokemon",
+				"fileSystem": "raw"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"count": {
+					"type": "integer"
+				},
+				"next": {
+					"type": "string"
+				},
+				"previous": {
+					"type": "null"
+				},
+				"results": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"name": {
+								"type": "string"
+							},
+							"url": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
