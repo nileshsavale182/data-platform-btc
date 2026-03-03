@@ -80,7 +80,17 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": {
+						"value": "@pipeline().parameters.p_notebook_path",
+						"type": "Expression"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks",
+					"type": "LinkedServiceReference"
+				}
 			},
 			{
 				"name": "Set_v_run_id",
@@ -100,6 +110,12 @@
 				}
 			}
 		],
+		"parameters": {
+			"p_notebook_path": {
+				"type": "string",
+				"defaultValue": "/Users/thebeastmode182@gmail.com/nb_silver_transformation_orders_practice"
+			}
+		},
 		"variables": {
 			"v_run_id": {
 				"type": "String"
