@@ -5,7 +5,14 @@
 			{
 				"name": "Copy data",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Set_v_run_id",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -45,7 +52,13 @@
 				"outputs": [
 					{
 						"referenceName": "DS_dummy_data",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"p_run_id": {
+								"value": "@variables('v_run_id')",
+								"type": "Expression"
+							}
+						}
 					}
 				]
 			},
@@ -68,8 +81,30 @@
 					"secureInput": false
 				},
 				"userProperties": []
+			},
+			{
+				"name": "Set_v_run_id",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_run_id",
+					"value": {
+						"value": "@pipeline().RunId",
+						"type": "Expression"
+					}
+				}
 			}
 		],
+		"variables": {
+			"v_run_id": {
+				"type": "String"
+			}
+		},
 		"annotations": []
 	}
 }
