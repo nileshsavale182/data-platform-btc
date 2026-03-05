@@ -1,0 +1,84 @@
+{
+	"name": "PL_Master_Entity_Ingestion",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_Entity_Config",
+				"description": "This activity look up rest_entity_config table in Azure SQL and returns\nSELECT * \nFROM etl_entity_config\nWHERE active_flag = 1\n\nEnable first row only\n\noutput - list of entities ",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
+			},
+			{
+				"name": "ForEach_Entity",
+				"description": "This loops over entities selected\nBatch count 3 \nThis controls parallel ingestion ",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup_Entity_Config",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup_Entity_Config').output.value",
+						"type": "Expression"
+					},
+					"batchCount": 3,
+					"activities": [
+						{
+							"name": "Run_Entity_Ingestion",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "PL_Reqres_REST_Ingestion",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"p_entity_name": {
+										"value": "@item().entity_name",
+										"type": "Expression"
+									},
+									"p_api_endpoint": {
+										"value": "@item().api_endpoint",
+										"type": "Expression"
+									},
+									"p_page_size": {
+										"value": "@item().page_size",
+										"type": "Expression"
+									},
+									"p_watermark_column": {
+										"value": "@item().watermark_column",
+										"type": "Expression"
+									},
+									"p_notebook_name": {
+										"value": "@item().notebook_name",
+										"type": "Expression"
+									},
+									"p_run_mode": "AUTO"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": []
+	}
+}

@@ -39,7 +39,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "DS_REST_Demo",
+						"referenceName": "DS_REST_Pokemon",
 						"type": "DatasetReference"
 					}
 				],
