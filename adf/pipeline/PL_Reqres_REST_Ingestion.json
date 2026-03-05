@@ -527,6 +527,26 @@
 				}
 			}
 		],
+		"parameters": {
+			"p_entity_name": {
+				"type": "string"
+			},
+			"p_api_endpoint": {
+				"type": "string"
+			},
+			"p_page_size": {
+				"type": "string"
+			},
+			"p_watermark_column": {
+				"type": "string"
+			},
+			"p_notebook_name": {
+				"type": "string"
+			},
+			"p_run_mode": {
+				"type": "string"
+			}
+		},
 		"variables": {
 			"v_runId": {
 				"type": "String"
