@@ -1,0 +1,74 @@
+{
+	"name": "PL_sap_salesforce_file_ingestion",
+	"properties": {
+		"activities": [
+			{
+				"name": "SP_Insert_Audit_Record_Started",
+				"type": "SqlServerStoredProcedure",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"sqlServerName": "sql-server-btc.database.windows.net",
+						"sqlDatabaseName": "SQL_DB_BTC"
+					}
+				}
+			},
+			{
+				"name": "Lookup_Pipeline_State_Last_Processed_Date",
+				"type": "Lookup",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "SP_Insert_Audit_Record_Started",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT last_processed_date\nFROM pipeline_state\nWHERE pipeline_name = 'sap_invoice_pipeline'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_SQL_Control_State",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
+		"variables": {
+			"v_last_processed_date": {
+				"type": "String",
+				"defaultValue": "2026-03-11T19:45:42Z"
+			}
+		},
+		"annotations": []
+	}
+}
