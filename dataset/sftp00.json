@@ -1,24 +1,15 @@
 {
-	"name": "DS_SFTP_Folder_SAP",
+	"name": "sftp00",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "Sftp1",
 			"type": "LinkedServiceReference"
-		},
-		"parameters": {
-			"P_filename": {
-				"type": "string"
-			}
 		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "SftpLocation",
-				"fileName": {
-					"value": "@dataset().P_filename",
-					"type": "Expression"
-				},
 				"folderPath": "/sap"
 			},
 			"columnDelimiter": ",",

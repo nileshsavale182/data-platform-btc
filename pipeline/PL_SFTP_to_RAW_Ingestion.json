@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Get_Metadata_Get_LastModified_for_Files_in_SFTP",
+				"name": "Get Metadata11",
 				"type": "GetMetadata",
 				"dependsOn": [],
 				"policy": {
@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "DS_SFTP_Folder_SAP",
+						"referenceName": "sftp00",
 						"type": "DatasetReference"
 					},
 					"fieldList": [
@@ -30,80 +30,6 @@
 					"formatSettings": {
 						"type": "DelimitedTextReadSettings"
 					}
-				}
-			},
-			{
-				"name": "ForEach1",
-				"type": "ForEach",
-				"dependsOn": [
-					{
-						"activity": "Get_Metadata_Get_LastModified_for_Files_in_SFTP",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"items": {
-						"value": "@activity('Get_Metadata_Get_LastModified_for_Files_in_SFTP').output.childItems",
-						"type": "Expression"
-					},
-					"activities": [
-						{
-							"name": "Get Metadata1",
-							"type": "GetMetadata",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"dataset": {
-									"referenceName": "DS_SFTP_Folder_SAP",
-									"type": "DatasetReference"
-								},
-								"fieldList": [
-									"lastModified"
-								],
-								"storeSettings": {
-									"type": "SftpReadSettings",
-									"enablePartitionDiscovery": false,
-									"disableChunking": false
-								},
-								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
-								}
-							}
-						},
-						{
-							"name": "Filter_New_Files",
-							"type": "Filter",
-							"dependsOn": [
-								{
-									"activity": "Get Metadata1",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"userProperties": [],
-							"typeProperties": {
-								"items": {
-									"value": "@item().lastModified",
-									"type": "Expression"
-								},
-								"condition": {
-									"value": "@greater(item().lastModified, variables('v_last_processed_date'))",
-									"type": "Expression"
-								}
-							}
-						}
-					]
 				}
 			}
 		],
