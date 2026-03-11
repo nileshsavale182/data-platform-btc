@@ -1,0 +1,17 @@
+{
+	"name": "DS_SQL_Control_State",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "control",
+			"table": "api_ingestion_state"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

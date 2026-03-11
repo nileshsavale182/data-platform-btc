@@ -1,0 +1,27 @@
+{
+	"name": "DS_REST_Pokemon",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_REST_PokeAPI",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"offset": {
+				"type": "string"
+			},
+			"limit": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat('pokemon?offset=', dataset().offset, '&limit=', dataset().offset)",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

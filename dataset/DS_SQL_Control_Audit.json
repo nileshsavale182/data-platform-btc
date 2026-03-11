@@ -1,0 +1,17 @@
+{
+	"name": "DS_SQL_Control_Audit",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "control",
+			"table": "api_ingestion_audit"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
