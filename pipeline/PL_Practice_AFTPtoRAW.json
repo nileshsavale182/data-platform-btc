@@ -1,11 +1,18 @@
 {
-	"name": "PL_SFTP_to_RAW_Ingestion",
+	"name": "PL_Practice_AFTPtoRAW",
 	"properties": {
 		"activities": [
 			{
-				"name": "Get Metadata11",
+				"name": "Get Metadata1",
 				"type": "GetMetadata",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "v_last_processed_time",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -16,7 +23,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "sftp00",
+						"referenceName": "DS_Practice2SFTP",
 						"type": "DatasetReference"
 					},
 					"fieldList": [
@@ -33,11 +40,11 @@
 				}
 			},
 			{
-				"name": "ForEach1",
+				"name": "ForEach",
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Get Metadata11",
+						"activity": "Get Metadata1",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -46,12 +53,12 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Get Metadata11').output.childItems",
+						"value": "@activity('Get Metadata1').output.childItems",
 						"type": "Expression"
 					},
 					"activities": [
 						{
-							"name": "Get Metadata12",
+							"name": "Get Metadata2",
 							"type": "GetMetadata",
 							"dependsOn": [],
 							"policy": {
@@ -64,18 +71,12 @@
 							"userProperties": [],
 							"typeProperties": {
 								"dataset": {
-									"referenceName": "DS_SFTP_Folder_SAP",
-									"type": "DatasetReference",
-									"parameters": {
-										"P_filename": {
-											"value": "@item().name",
-											"type": "Expression"
-										}
-									}
+									"referenceName": "DS_Practice2SFTP",
+									"type": "DatasetReference"
 								},
 								"fieldList": [
-									"lastModified",
-									"itemName"
+									"itemName",
+									"lastModified"
 								],
 								"storeSettings": {
 									"type": "SftpReadSettings",
@@ -92,7 +93,7 @@
 							"type": "IfCondition",
 							"dependsOn": [
 								{
-									"activity": "Get Metadata12",
+									"activity": "Get Metadata2",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -101,7 +102,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@greater(activity('Get Metadata12').output.lastModified, variables('v_last_processed_date'))",
+									"value": "@greater(activity('Get Metadata2').output.lastModified, variables('v_last_modified'))",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
@@ -153,11 +154,11 @@
 										},
 										"inputs": [
 											{
-												"referenceName": "DS_SFTP_Folder_SAP",
+												"referenceName": "ds_practice_copy_data_eachfile",
 												"type": "DatasetReference",
 												"parameters": {
-													"P_filename": {
-														"value": "@activity('Get Metadata12').output.itemName",
+													"filename": {
+														"value": "@activity('Get Metadata2').output.name",
 														"type": "Expression"
 													}
 												}
@@ -175,10 +176,52 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "LookUp_State_Table",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT last_processed_date\nFROM pipeline_state\nWHERE pipeline_name='sap_invoice_pipeline'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_SQL_Control_State",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "v_last_processed_time",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "LookUp_State_Table",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": []
 			}
 		],
 		"variables": {
-			"v_last_processed_date": {
+			"v_last_modified": {
 				"type": "String",
 				"defaultValue": "2026-03-11T20:30:46Z"
 			}
